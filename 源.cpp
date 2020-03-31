@@ -299,7 +299,7 @@ int main()
     int MaxEpoc;//最大迭代次数
     int i;
     srand(seed);
-    MaxEpoc = 40000;
+    MaxEpoc = 10000;
     pcross = 0.5; pmutation = 0.05;
     CalculatDist();//计算城市距离词典
     InitColony(city);//生成初始种群
