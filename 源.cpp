@@ -4,10 +4,10 @@
 #include "math.h"
 #include "time.h"
 
-#define CITY_NUM 38     //³ÇÊĞÊı£¬³ÇÊĞ±àºÅÊÇ0~CITY_NUM-1
-#define POPSIZE 300        //ÖÖÈº¸öÌåÊı
-#define MAXVALUE 10000000   //Â·¾¶×î´óÖµÉÏÏŞ
-#define N 100000//ĞèÒª¸ù¾İÊµ¼ÊÇóµÃµÄÂ·¾¶ÖµĞŞÕı
+#define CITY_NUM 38     //åŸå¸‚æ•°ï¼ŒåŸå¸‚ç¼–å·æ˜¯0~CITY_NUM-1
+#define POPSIZE 300        //ç§ç¾¤ä¸ªä½“æ•°
+#define MAXVALUE 10000000   //è·¯å¾„æœ€å¤§å€¼ä¸Šé™
+#define N 100000//éœ€è¦æ ¹æ®å®é™…æ±‚å¾—çš„è·¯å¾„å€¼ä¿®æ­£
 unsigned seed = (unsigned)time(0);
 double Hash[CITY_NUM + 1];
 typedef struct CityPosition
@@ -20,32 +20,32 @@ CityPosition CityPos[38] = {
     {11003.611100,42102.500000},{11108.611100,42373.888900},{11133.333300,42885.833300},{11155.833300,42712.500000},{11183.333300,42933.333300},{11297.500000,42853.333300},{11310.277800,42929.444400},{11416.666700,42983.333300},{11423.888900,43000.277800},{11438.333300,42057.222200},{11461.111100,43252.777800},{11485.555600,43187.222200},{11503.055600,42855.277800},{11511.388900,42106.388900},{11522.222200,42841.944400},{11569.444400,43136.666700},{11583.333300,43150.000000},{11595.000000,43148.055600},{11600.000000,43150.000000},{11690.555600,42686.666700},{11715.833300,41836.111100},{11751.111100,42814.444400},{11770.277800,42651.944400},{11785.277800,42884.444400},{11822.777800,42673.611100},{11846.944400,42660.555600},{11963.055600,43290.555600},{11973.055600,43026.111100},{12058.333300,42195.555600},{12149.444400,42477.500000},{12286.944400,43355.555600},{12300.000000,42433.333300},{12355.833300,43156.388900},{12363.333300,43189.166700},{12372.777800,42711.388900},{12386.666700,43334.722200},{12421.666700,42895.555600},{12645.000000,42973.333300}
 };
 
-double CityDistance[CITY_NUM][CITY_NUM];//³ÇÊĞ¾àÀë´Êµä
+double CityDistance[CITY_NUM][CITY_NUM];//åŸå¸‚è·ç¦»è¯å…¸
 
 typedef struct {
-    int colony[POPSIZE][CITY_NUM + 1];//³ÇÊĞÖÖÈº,Ä¬ÈÏ³ö·¢³ÇÊĞ±àºÅÎª0£¬Ôò³ÇÊĞ±àºÅµÄ×îºóÒ»¸ö³ÇÊĞ»¹Ó¦¸ÃÎª0
-    double fitness[POPSIZE];// Ã¿¸ö¸öÌåµÄÊÊÓ¦Öµ£¬¼´1/Distance[POPSIZE]
-    double Distance[POPSIZE];//Ã¿¸ö¸öÌåµÄ×ÜÂ·¾¶
-    int BestRooting[CITY_NUM + 1];//×îÓÅ³ÇÊĞÂ·¾¶ĞòÁĞ
-    double BestFitness;//×îÓÅÂ·¾¶ÊÊÓ¦Öµ
-    double BestValue;//×îÓÅÂ·¾¶³¤¶È
+    int colony[POPSIZE][CITY_NUM + 1];//åŸå¸‚ç§ç¾¤,é»˜è®¤å‡ºå‘åŸå¸‚ç¼–å·ä¸º0ï¼Œåˆ™åŸå¸‚ç¼–å·çš„æœ€åä¸€ä¸ªåŸå¸‚è¿˜åº”è¯¥ä¸º0
+    double fitness[POPSIZE];// æ¯ä¸ªä¸ªä½“çš„é€‚åº”å€¼ï¼Œå³1/Distance[POPSIZE]
+    double Distance[POPSIZE];//æ¯ä¸ªä¸ªä½“çš„æ€»è·¯å¾„
+    int BestRooting[CITY_NUM + 1];//æœ€ä¼˜åŸå¸‚è·¯å¾„åºåˆ—
+    double BestFitness;//æœ€ä¼˜è·¯å¾„é€‚åº”å€¼
+    double BestValue;//æœ€ä¼˜è·¯å¾„é•¿åº¦
     int BestNum;
 }TSP, * PTSP;
 
-/*¼ÆËã³ÇÊĞ¾àÀë´ÊµäCityDistance[i][j]*/
+/*è®¡ç®—åŸå¸‚è·ç¦»è¯å…¸CityDistance[i][j]*/
 void CalculatDist()
 {
     int i, j;
     double temp1, temp2;
     for (i = 0; i < CITY_NUM; i++) {
-        for (j = 0; j <= CITY_NUM; j++) {//×îºóÒ»¸ö³ÇÊĞ»¹Ó¦¸Ã·µ»Øµ½³ö·¢½Úµã
+        for (j = 0; j <= CITY_NUM; j++) {//æœ€åä¸€ä¸ªåŸå¸‚è¿˜åº”è¯¥è¿”å›åˆ°å‡ºå‘èŠ‚ç‚¹
             temp1 = CityPos[j].x - CityPos[i].x;
             temp2 = CityPos[j].y - CityPos[i].y;
             CityDistance[i][j] = sqrt(temp1 * temp1 + temp2 * temp2);
         }
     }
 }
-/*Êı×é¸´ÖÆ*/
+/*æ•°ç»„å¤åˆ¶*/
 void copy(int a[], int b[])
 {
     int i = 0;
@@ -55,18 +55,18 @@ void copy(int a[], int b[])
     }
 }
 
-/*ÓÃÀ´¼ì²éĞÂÉú³ÉµÄ½ÚµãÊÇ·ñÔÚµ±Ç°ÈºÌåÖĞ£¬0ºÅ½ÚµãÊÇÄ¬ÈÏ³ö·¢½ÚµãºÍÖÕÖ¹½Úµã*/
+/*ç”¨æ¥æ£€æŸ¥æ–°ç”Ÿæˆçš„èŠ‚ç‚¹æ˜¯å¦åœ¨å½“å‰ç¾¤ä½“ä¸­ï¼Œ0å·èŠ‚ç‚¹æ˜¯é»˜è®¤å‡ºå‘èŠ‚ç‚¹å’Œç»ˆæ­¢èŠ‚ç‚¹*/
 bool check(TSP& city, int pop, int num, int k)
 {
     int i;
     for (i = 0; i <= num; i++) {
         if (k == city.colony[pop][i])
-            return true;//ĞÂÉú³É½Úµã´æÔÚÓÚÒÑ¾­Éú³ÉµÄÂ·¾¶ÖĞ
+            return true;//æ–°ç”ŸæˆèŠ‚ç‚¹å­˜åœ¨äºå·²ç»ç”Ÿæˆçš„è·¯å¾„ä¸­
     }
-    return false;//ĞÂÉú³É½ÚµãÃ»ÓĞ´æÔÚÓÚÒÑ¾­Éú³ÉµÄÂ·¾¶ÖĞ
+    return false;//æ–°ç”ŸæˆèŠ‚ç‚¹æ²¡æœ‰å­˜åœ¨äºå·²ç»ç”Ÿæˆçš„è·¯å¾„ä¸­
 }
 
-/****************ÖÖÈº³õÊ¼»¯£¬¼´Îªcity.colony[i][j]¸³Öµ****************/
+/****************ç§ç¾¤åˆå§‹åŒ–ï¼Œå³ä¸ºcity.colony[i][j]èµ‹å€¼****************/
 void InitColony(TSP& city)
 {
     int i, j, r;
@@ -74,15 +74,15 @@ void InitColony(TSP& city)
         city.colony[i][0] = 0;
         city.colony[i][CITY_NUM] = 0;
         city.BestValue = MAXVALUE;
-        city.BestFitness = 0;//ÊÊÓ¦ÖµÔ½´óÔ½ºÃ
+        city.BestFitness = 0;//é€‚åº”å€¼è¶Šå¤§è¶Šå¥½
     }
 
     for (i = 0; i < POPSIZE; i++)
     {
         for (j = 1; j < CITY_NUM; j++)
         {
-            r = rand() % (CITY_NUM - 1) + 1;//²úÉú1¡«CITY_NUM-1Ö®¼äµÄËæ»úÊı
-            while (check(city, i, j, r))//Ëæ»ú²úÉú³ÇÊĞĞòºÅ£¬¼´Îªcity.colony[i][j]¸³Öµ
+            r = rand() % (CITY_NUM - 1) + 1;//äº§ç”Ÿ1ï½CITY_NUM-1ä¹‹é—´çš„éšæœºæ•°
+            while (check(city, i, j, r))//éšæœºäº§ç”ŸåŸå¸‚åºå·ï¼Œå³ä¸ºcity.colony[i][j]èµ‹å€¼
             {
                 r = rand() % (CITY_NUM - 1) + 1;
             }
@@ -92,30 +92,30 @@ void InitColony(TSP& city)
     }
 }
 
-/*¼ÆËãÊÊÓ¦Öµ,¿¼ÂÇÓ¦¸ÃÔÚÕâÀïÃæ°Ñ×îÓÅÑ¡³öÀ´*/
+/*è®¡ç®—é€‚åº”å€¼,è€ƒè™‘åº”è¯¥åœ¨è¿™é‡Œé¢æŠŠæœ€ä¼˜é€‰å‡ºæ¥*/
 void CalFitness(TSP& city)
 {
     int i, j;
     int start, end;
     int Best = 0;
-    for (i = 0; i < POPSIZE; i++) {//ÇóÃ¿¸ö¸öÌåµÄ×ÜÂ·¾¶£¬ÊÊÓ¦Öµ
+    for (i = 0; i < POPSIZE; i++) {//æ±‚æ¯ä¸ªä¸ªä½“çš„æ€»è·¯å¾„ï¼Œé€‚åº”å€¼
         city.Distance[i] = 0;
         for (j = 1; j <= CITY_NUM; j++) {
             start = city.colony[i][j - 1]; end = city.colony[i][j];
-            city.Distance[i] = city.Distance[i] + CityDistance[start][end];//city.Distance[i]Ã¿¸ö¸öÌåµÄ×ÜÂ·¾¶
+            city.Distance[i] = city.Distance[i] + CityDistance[start][end];//city.Distance[i]æ¯ä¸ªä¸ªä½“çš„æ€»è·¯å¾„
         }
         city.fitness[i] = N / city.Distance[i];
-        if (city.fitness[i] > city.fitness[Best])//Ñ¡³ö×î´óµÄÊÊÓ¦Öµ£¬¼´Ñ¡³öËùÓĞ¸öÌåÖĞµÄ×î¶ÌÂ·¾¶
+        if (city.fitness[i] > city.fitness[Best])//é€‰å‡ºæœ€å¤§çš„é€‚åº”å€¼ï¼Œå³é€‰å‡ºæ‰€æœ‰ä¸ªä½“ä¸­çš„æœ€çŸ­è·¯å¾„
             Best = i;
     }
-    copy(city.BestRooting, city.colony[Best]);//½«×îÓÅ¸öÌå¿½±´¸øcity.BestRooting
+    copy(city.BestRooting, city.colony[Best]);//å°†æœ€ä¼˜ä¸ªä½“æ‹·è´ç»™city.BestRooting
     city.BestFitness = city.fitness[Best];
     city.BestValue = city.Distance[Best];
     city.BestNum = Best;
 }
 
 
-/****************Ñ¡ÔñËã×Ó£ºÂÖÅÌ¶Ä·¨****************/
+/****************é€‰æ‹©ç®—å­ï¼šè½®ç›˜èµŒæ³•****************/
 void Select(TSP& city)
 {
     int TempColony[POPSIZE][CITY_NUM + 1];
@@ -138,7 +138,7 @@ void Select(TSP& city)
     {
         SelectP[i + 1] = SelectP[i] + GaiLv[i] * RAND_MAX;
     }
-    memcpy(TempColony[0], city.colony[city.BestNum], sizeof(TempColony[0]));//void *memcpy(void *dest, const void *src, size_t n)´ÓÔ´srcËùÖ¸µÄÄÚ´æµØÖ·µÄÆğÊ¼Î»ÖÃ¿ªÊ¼¿½±´n¸ö×Ö½Úµ½Ä¿±êdestËùÖ¸µÄÄÚ´æµØÖ·µÄÆğÊ¼Î»ÖÃÖĞ
+    memcpy(TempColony[0], city.colony[city.BestNum], sizeof(TempColony[0]));//void *memcpy(void *dest, const void *src, size_t n)ä»æºsrcæ‰€æŒ‡çš„å†…å­˜åœ°å€çš„èµ·å§‹ä½ç½®å¼€å§‹æ‹·è´nä¸ªå­—èŠ‚åˆ°ç›®æ ‡destæ‰€æŒ‡çš„å†…å­˜åœ°å€çš„èµ·å§‹ä½ç½®ä¸­
     for (t = 1; t < POPSIZE; t++)
     {
         double ran = rand() % RAND_MAX + 1;
@@ -157,8 +157,8 @@ void Select(TSP& city)
 
 }
 
-/****************½»²æ£ºÍ·Î²²»±ä£¬ÖĞ¼ä´òÂÒË³Ğò½»²æ****************/
-void Cross(TSP& city, double pc)//½»²æ¸ÅÂÊÊÇpc
+/****************äº¤å‰ï¼šå¤´å°¾ä¸å˜ï¼Œä¸­é—´æ‰“ä¹±é¡ºåºäº¤å‰****************/
+void Cross(TSP& city, double pc)//äº¤å‰æ¦‚ç‡æ˜¯pc
 {
     int i, j, t, l;
     int a, b, ca, cb;
@@ -170,15 +170,15 @@ void Cross(TSP& city, double pc)//½»²æ¸ÅÂÊÊÇpc
         {
             cb = rand() % POPSIZE;
             ca = cb;
-            if (ca == city.BestNum || cb == city.BestNum)//Èç¹ûÓöµ½×îÓÅÔòÖ±½Ó½øĞĞÏÂ´ÎÑ­»·
+            if (ca == city.BestNum || cb == city.BestNum)//å¦‚æœé‡åˆ°æœ€ä¼˜åˆ™ç›´æ¥è¿›è¡Œä¸‹æ¬¡å¾ªç¯
                 continue;
 
             l = rand() % 19 + 1;  //1-19
             a = rand() % (CITY_NUM - l) + 1; //1-37
 
-            memset(Hash, 0, sizeof(Hash));//void *memset(void *s, int ch, size_t n);½«sÖĞµ±Ç°Î»ÖÃºóÃæµÄn¸ö×Ö½Ú ÓÃ ch Ìæ»»²¢·µ»Ø s ¡£
+            memset(Hash, 0, sizeof(Hash));//void *memset(void *s, int ch, size_t n);å°†sä¸­å½“å‰ä½ç½®åé¢çš„nä¸ªå­—èŠ‚ ç”¨ ch æ›¿æ¢å¹¶è¿”å› s ã€‚
             Temp1[0] = Temp1[CITY_NUM] = 0;
-            for (j = 1; j <= l; j++)//´òÂÒË³Ğò¼´Ëæ»ú£¬Ñ¡³öÀ´µÄÍ¨¹ıHash±ê¼ÇÎª1
+            for (j = 1; j <= l; j++)//æ‰“ä¹±é¡ºåºå³éšæœºï¼Œé€‰å‡ºæ¥çš„é€šè¿‡Hashæ ‡è®°ä¸º1
             {
                 Temp1[j] = city.colony[cb][a + j - 1]; //a+L=2~38 20~38
                 Hash[Temp1[j]] = 1;
@@ -197,7 +197,7 @@ void Cross(TSP& city, double pc)//½»²æ¸ÅÂÊÊÇpc
 
 }
 
-/****************±äÒì****************/
+/****************å˜å¼‚****************/
 double GetFittness(int a[CITY_NUM + 1])
 {
     int i, start, end;
@@ -209,22 +209,22 @@ double GetFittness(int a[CITY_NUM + 1])
     }
     return N / Distance;
 }
-/*¶Ô»»±äÒì*/
-void Mutation(TSP& city, double pm)//±äÒì¸ÅÂÊÊÇpm
+/*å¯¹æ¢å˜å¼‚*/
+void Mutation(TSP& city, double pm)//å˜å¼‚æ¦‚ç‡æ˜¯pm
 {
     int i, k, m;
     int Temp[CITY_NUM + 1];
     for (k = 0; k < POPSIZE; k++)
     {
-        double s = ((double)(rand() % RAND_MAX)) / RAND_MAX;//Ëæ»ú²úÉú¸ÅÂÊ0~1¼ä
-        i = rand() % POPSIZE;//Ëæ»ú²úÉú0~POPSIZEÖ®¼äµÄÊı
-        if (s < pm && i != city.BestNum)//i!=city.BestNum£¬¼´±£Ö¤×îÓÅµÄ¸öÌå²»±äÒì
+        double s = ((double)(rand() % RAND_MAX)) / RAND_MAX;//éšæœºäº§ç”Ÿæ¦‚ç‡0~1é—´
+        i = rand() % POPSIZE;//éšæœºäº§ç”Ÿ0~POPSIZEä¹‹é—´çš„æ•°
+        if (s < pm && i != city.BestNum)//i!=city.BestNumï¼Œå³ä¿è¯æœ€ä¼˜çš„ä¸ªä½“ä¸å˜å¼‚
         {
             int a, b, t;
             a = (rand() % (CITY_NUM - 1)) + 1;
             b = (rand() % (CITY_NUM - 1)) + 1;
             copy(Temp, city.colony[i]);
-            if (a > b)//±£Ö¤ÈÃb>=a
+            if (a > b)//ä¿è¯è®©b>=a
             {
                 t = a;
                 a = b;
@@ -285,36 +285,36 @@ void Mutation(TSP& city, double pm)//±äÒì¸ÅÂÊÊÇpm
 void OutPut(TSP& city)
 {
     int i, j;
-    printf("×î¼ÑÂ·¾¶Îª:\n");
+    printf("æœ€ä½³è·¯å¾„ä¸º:\n");
     for (i = 0; i <= CITY_NUM; i++)
         printf("%5d", city.BestRooting[i]);
-    printf("\n×î¼ÑÂ·¾¶ÖµÎª£º%f\n", (city.BestValue));
+    printf("\næœ€ä½³è·¯å¾„å€¼ä¸ºï¼š%f\n", (city.BestValue));
 }
 
 
 int main()
 {
     TSP city;
-    double pcross, pmutation;//½»²æ¸ÅÂÊºÍ±äÒì¸ÅÂÊ
-    int MaxEpoc;//×î´óµü´ú´ÎÊı
+    double pcross, pmutation;//äº¤å‰æ¦‚ç‡å’Œå˜å¼‚æ¦‚ç‡
+    int MaxEpoc;//æœ€å¤§è¿­ä»£æ¬¡æ•°
     int i;
-    srand(seed);
-    MaxEpoc = 20000;
+    srand(seed)
+    MaxEpoc = 40000;
     pcross = 0.5; pmutation = 0.05;
-    CalculatDist();//¼ÆËã³ÇÊĞ¾àÀë´Êµä
-    InitColony(city);//Éú³É³õÊ¼ÖÖÈº
-    CalFitness(city);//¼ÆËãÊÊÓ¦Öµ,¿¼ÂÇÓ¦¸ÃÔÚÕâÀïÃæ°Ñ×îÓÅÑ¡³öÀ´
+    CalculatDist();//è®¡ç®—åŸå¸‚è·ç¦»è¯å…¸
+    InitColony(city);//ç”Ÿæˆåˆå§‹ç§ç¾¤
+    CalFitness(city);//è®¡ç®—é€‚åº”å€¼,è€ƒè™‘åº”è¯¥åœ¨è¿™é‡Œé¢æŠŠæœ€ä¼˜é€‰å‡ºæ¥
 
     for (i = 0; i < MaxEpoc; i++)
     {
 
-        Select(city);//Ñ¡Ôñ(¸´ÖÆ)£ºÂÖÅÌ¶Ä·¨
-        Cross(city, pcross);//½»²æ
-        Mutation(city, pmutation);//±äÒì
-        CalFitness(city);//¼ÆËãÊÊÓ¦Öµ
+        Select(city);//é€‰æ‹©(å¤åˆ¶)ï¼šè½®ç›˜èµŒæ³•
+        Cross(city, pcross);//äº¤å‰
+        Mutation(city, pmutation);//å˜å¼‚
+        CalFitness(city);//è®¡ç®—é€‚åº”å€¼
         OutPut(city);
     }
 
-    OutPut(city);//Êä³ö
+    OutPut(city);//è¾“å‡º
     return 0;
 }
